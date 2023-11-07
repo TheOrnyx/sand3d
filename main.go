@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-gl/gl/v4.6-core/gl"
 	"github.com/veandco/go-sdl2/sdl"
+	glm "github.com/go-gl/mathgl/mgl32"
 )
 
 const WIN_WIDTH, WIN_HEIGHT = 800, 800
@@ -58,7 +59,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	texture2, err := loadTexture("./transhoward.png")
+	texture2, err := loadTexture("./sofa-cat.png")
 	if err != nil{
 		log.Fatal(err)
 	}
@@ -78,8 +79,13 @@ func main() {
 		
 		progShader.use()
 
+		trans := glm.Ident4()
+		trans = trans.Mul4(glm.Translate3D(0.5, -0.5, 0.0))
+		trans = glm.HomogRotate3DZ(glm.DegToRad(float32(sdl.GetTicks64()/10)))
+		transformLoc := gl.GetUniformLocation(progShader.ID, gl.Str("transform\x00"))
+		gl.UniformMatrix4fv(transformLoc, 1, false, &trans[0])
+		
 		gl.BindVertexArray(vao)
-		// gl.DrawArrays(gl.TRIANGLES, 0, 3)
 		gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
 		window.GLSwap()
 		
@@ -124,7 +130,7 @@ func loadTexture(texPath string) (uint32, error) {
 	}
 
 	flipImage(rgba)
-
+	
 	var texture uint32
 	gl.GenTextures(1, &texture)
 	gl.BindTexture(gl.TEXTURE_2D, texture)
@@ -179,4 +185,10 @@ func makeVao() (uint32, uint32, uint32){
 	return vao, vbo, ebo
 }
 
-
+func makeOneNumArray(length int, num float32) []float32 {
+	arr := make([]float32, length)
+	for i := range arr {
+		arr[i] = num
+	}
+	return arr
+}

@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"github.com/go-gl/gl/v4.6-core/gl"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 type shader struct {
@@ -84,6 +85,42 @@ func (s *shader) SetInt(name string, value int32) {
 
 func (s *shader) SetFloat(name string, value float32) {
 	gl.Uniform1f(gl.GetUniformLocation(s.ID, gl.Str(name)), value)
+}
+
+func (s *shader) SetVec2(name string, value *mgl32.Vec2) {
+	gl.Uniform2fv(gl.GetUniformLocation(s.ID, gl.Str(name)), 1, &value[0])
+}
+
+func (s *shader) SetVec2f(name string, x, y float32) {
+	gl.Uniform2f(gl.GetUniformLocation(s.ID, gl.Str(name)), x, y)
+}
+
+func (s *shader) SetVec3(name string, value *mgl32.Vec3) {
+	gl.Uniform3fv(gl.GetUniformLocation(s.ID, gl.Str(name)), 1, &value[0])
+}
+
+func (s *shader) SetVec3f(name string, x, y, z float32) {
+	gl.Uniform3f(gl.GetUniformLocation(s.ID, gl.Str(name)), x, y, z)
+}
+
+func (s *shader) SetVec4(name string, value *mgl32.Vec4) {
+	gl.Uniform4fv(gl.GetUniformLocation(s.ID, gl.Str(name)), 1, &value[0])
+}
+
+func (s *shader) SetVec4f(name string, x, y, z, w float32) {
+	gl.Uniform4f(gl.GetUniformLocation(s.ID, gl.Str(name)), x, y, z, w)
+}
+
+func (s *shader) SetMat2(name string, mat *mgl32.Mat2) {
+	gl.UniformMatrix2fv(gl.GetUniformLocation(s.ID, gl.Str(name)), 1, false, &(*mat)[0])
+}
+
+func (s *shader) SetMat3(name string, mat *mgl32.Mat3) {
+	gl.UniformMatrix3fv(gl.GetUniformLocation(s.ID, gl.Str(name)), 1, false, &(*mat)[0])
+}
+
+func (s *shader) SetMat4(name string, mat *mgl32.Mat4) {
+	gl.UniformMatrix4fv(gl.GetUniformLocation(s.ID, gl.Str(name)), 1, false, &(*mat)[0])
 }
 
 func handleError(err error) {
