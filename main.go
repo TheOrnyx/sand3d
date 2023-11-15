@@ -72,16 +72,23 @@ var triVertices = []float32{
 }
 
 var cubePositions = []glm.Vec3{
-	glm.Vec3{ 0.0,  0.0,  0.0},
-	glm.Vec3{ 2.0,  5.0, -15.0},
+	glm.Vec3{0.0, 0.0, 0.0},
+	glm.Vec3{2.0, 5.0, -15.0},
 	glm.Vec3{-1.5, -2.2, -2.5},
 	glm.Vec3{-3.8, -2.0, -12.3},
-	glm.Vec3{ 2.4, -0.4, -3.5},
-	glm.Vec3{-1.7,  3.0, -7.5},
-	glm.Vec3{ 1.3, -2.0, -2.5},
-	glm.Vec3{ 1.5,  2.0, -2.5},
-	glm.Vec3{ 1.5,  0.2, -1.5},
-	glm.Vec3{-1.3,  1.0, -1.5},
+	glm.Vec3{2.4, -0.4, -3.5},
+	glm.Vec3{-1.7, 3.0, -7.5},
+	glm.Vec3{1.3, -2.0, -2.5},
+	glm.Vec3{1.5, 2.0, -2.5},
+	glm.Vec3{1.5, 0.2, -1.5},
+	glm.Vec3{-1.3, 1.0, -1.5},
+}
+
+var pointLightPositions = []glm.Vec3{
+	glm.Vec3{0.7, 0.2, 2.0},
+	glm.Vec3{2.3, -3.3, -4.0},
+	glm.Vec3{-4.0, 2.0, -12.0},
+	glm.Vec3{0.0, 0.0, -3.0},
 }
 
 func main() {
@@ -125,7 +132,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	lightingShader.use()
 	lightingShader.SetInt("material.diffuse\x00", 0)
 	lightingShader.SetInt("material.specular\x00", 1)
@@ -138,28 +145,62 @@ func main() {
 		currentFrame := float32(sdl.GetTicks64()) / 1000
 		deltaTime = currentFrame - lastFrame
 		lastFrame = currentFrame
-
 		gl.ClearColor(0, 0, 0, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		// lightPos = glm.Vec3{1+math32.Sin(currentFrame)*2, math32.Sin(currentFrame/2), lightPos.Z()}
-
 		lightingShader.use()
-		lightingShader.SetVec3("light.position\x00", &camera.Position)
-		lightingShader.SetVec3("light.direction\x00", &camera.Front)
-		lightingShader.SetFloat("light.cutOff\x00", math32.Cos(glm.DegToRad(12.5)))
-		lightingShader.SetFloat("light.outerCutOff\x00", math32.Cos(glm.DegToRad(17.5)))
 		lightingShader.SetVec3("viewPos\x00", &camera.Position)
-
-		lightingShader.SetVec3f("light.ambient\x00", 0.2, 0.2, 0.2)
-		lightingShader.SetVec3f("light.diffuse\x00", 0.5, 0.5, 0.5)
-		lightingShader.SetVec3f("light.specular\x00", 1.0, 1.0, 1.0)
-
-		lightingShader.SetFloat("light.constant\x00", 1.0)
-		lightingShader.SetFloat("light.linear\x00", 0.09)
-		lightingShader.SetFloat("light.quadratic\x00", 0.032)
-
 		lightingShader.SetFloat("material.shininess\x00", 32.0)
+
+
+		lightingShader.SetVec3f("dirLight.direction\x00", -0.2, -1.0, -0.3)
+		lightingShader.SetVec3f("dirLight.ambient\x00", 0.05, 0.05, 0.05)
+		lightingShader.SetVec3f("dirLight.diffuse\x00", 0.4, 0.4, 0.4)
+		lightingShader.SetVec3f("dirLight.specular\x00", 0.5, 0.5, 0.5)
+
+		lightingShader.SetVec3("pointLights[0].position\x00", &pointLightPositions[0])
+		lightingShader.SetVec3f("pointLights[0].ambient\x00", 0.05, 0.05, 0.05)
+		lightingShader.SetVec3f("pointLights[0].diffuse\x00", 0.8, 0.8, 0.8)
+		lightingShader.SetVec3f("pointLights[0].specular\x00", 1.0, 1.0, 1.0)
+		lightingShader.SetFloat("pointLights[0].constant\x00", 1.0)
+		lightingShader.SetFloat("pointLights[0].linear\x00", 0.09)
+		lightingShader.SetFloat("pointLights[0].quadratic\x00", 0.032)
+		
+		lightingShader.SetVec3("pointLights[1].position\x00", &pointLightPositions[0])
+		lightingShader.SetVec3f("pointLights[1].ambient\x00", 0.05, 0.05, 0.05)
+		lightingShader.SetVec3f("pointLights[1].diffuse\x00", 0.8, 0.8, 0.8)
+		lightingShader.SetVec3f("pointLights[1].specular\x00", 1.0, 1.0, 1.0)
+		lightingShader.SetFloat("pointLights[1].constant\x00", 1.0)
+		lightingShader.SetFloat("pointLights[1].linear\x00", 0.09)
+		lightingShader.SetFloat("pointLights[1].quadratic\x00", 0.032)
+		
+		lightingShader.SetVec3("pointLights[2].position\x00", &pointLightPositions[0])
+		lightingShader.SetVec3f("pointLights[2].ambient\x00", 0.05, 0.05, 0.05)
+		lightingShader.SetVec3f("pointLights[2].diffuse\x00", 0.8, 0.8, 0.8)
+		lightingShader.SetVec3f("pointLights[2].specular\x00", 1.0, 1.0, 1.0)
+		lightingShader.SetFloat("pointLights[2].constant\x00", 1.0)
+		lightingShader.SetFloat("pointLights[2].linear\x00", 0.09)
+		lightingShader.SetFloat("pointLights[2].quadratic\x00", 0.032)
+		
+		lightingShader.SetVec3("pointLights[3].position\x00", &pointLightPositions[0])
+		lightingShader.SetVec3f("pointLights[3].ambient\x00", 0.05, 0.05, 0.05)
+		lightingShader.SetVec3f("pointLights[3].diffuse\x00", 0.8, 0.8, 0.8)
+		lightingShader.SetVec3f("pointLights[3].specular\x00", 1.0, 1.0, 1.0)
+		lightingShader.SetFloat("pointLights[3].constant\x00", 1.0)
+		lightingShader.SetFloat("pointLights[3].linear\x00", 0.09)
+		lightingShader.SetFloat("pointLights[3].quadratic\x00", 0.032)
+
+		lightingShader.SetVec3("spotLight.position\x00", &camera.Position)
+		lightingShader.SetVec3("spotLight.direction\x00", &camera.Front)
+		lightingShader.SetVec3f("spotLight.ambient\x00", 0.0, 0.0, 0.0)
+		lightingShader.SetVec3f("spotLight.diffuse\x00", 1.0, 1.0, 1.0)
+		lightingShader.SetVec3f("spotLight.specular\x00", 1.0, 1.0, 1.0)
+		lightingShader.SetFloat("spotLight.constant\x00", 1.0)
+		lightingShader.SetFloat("spotLight.linear\x00", 0.09)
+		lightingShader.SetFloat("spotLight.quadratic\x00", 0.032)
+		lightingShader.SetFloat("spotLight.cutOff\x00", math32.Cos(glm.DegToRad(12.5)))
+		lightingShader.SetFloat("spotLight.outerCutOff\x00", math32.Cos(glm.DegToRad(15.0)))
+		
 
 		proj := glm.Perspective(glm.DegToRad(camera.Zoom), WIN_WIDTH/WIN_HEIGHT, 0.1, 100.0)
 		view := camera.GetViewMatrix()
@@ -175,7 +216,7 @@ func main() {
 		gl.BindTexture(gl.TEXTURE_2D, specularMap)
 		gl.ActiveTexture(gl.TEXTURE2)
 		gl.BindTexture(gl.TEXTURE_2D, emissionMap)
-		
+
 		gl.BindVertexArray(cubeVAO)
 		gl.DrawArrays(gl.TRIANGLES, 0, 36)
 
@@ -192,15 +233,17 @@ func main() {
 
 		// lamp stuff
 		lightCubeShader.use()
-		lightCubeShader.SetMat4("projection\x00", &proj)
-		lightCubeShader.SetMat4("view\x00", &view)
-		model = glm.Ident4()
-		model = model.Mul4(glm.Translate3D(lightPos.X(), lightPos.Y(), lightPos.Z()))
-		model = model.Mul4(glm.Scale3D(0.2, 0.2, 0.2))
-		lightCubeShader.SetMat4("model\x00", &model)
-
 		gl.BindVertexArray(lightCubeVAO)
-		gl.DrawArrays(gl.TRIANGLES, 0, 36)
+		for i := range pointLightPositions {
+			lightCubeShader.use()
+			lightCubeShader.SetMat4("projection\x00", &proj)
+			lightCubeShader.SetMat4("view\x00", &view)
+			model = glm.Ident4()
+			model = model.Mul4(glm.Translate3D(pointLightPositions[i].Elem()))
+			model = model.Mul4(glm.Scale3D(0.2, 0.2, 0.2))
+			lightCubeShader.SetMat4("model\x00", &model)
+			gl.DrawArrays(gl.TRIANGLES, 0, 36)
+		}
 
 		window.GLSwap()
 
