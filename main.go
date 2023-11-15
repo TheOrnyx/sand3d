@@ -70,6 +70,19 @@ var triVertices = []float32{
 	-0.5, 0.5, -0.5, 0.0, 1.0, 0.0, 0.0, 1.0,
 }
 
+var cubePositions = []glm.Vec3{
+	glm.Vec3{ 0.0,  0.0,  0.0},
+	glm.Vec3{ 2.0,  5.0, -15.0},
+	glm.Vec3{-1.5, -2.2, -2.5},
+	glm.Vec3{-3.8, -2.0, -12.3},
+	glm.Vec3{ 2.4, -0.4, -3.5},
+	glm.Vec3{-1.7,  3.0, -7.5},
+	glm.Vec3{ 1.3, -2.0, -2.5},
+	glm.Vec3{ 1.5,  2.0, -2.5},
+	glm.Vec3{ 1.5,  0.2, -1.5},
+	glm.Vec3{-1.3,  1.0, -1.5},
+}
+
 func main() {
 	fmt.Println("begin")
 	runtime.LockOSThread()
@@ -93,7 +106,7 @@ func main() {
 	gl.Viewport(0, 0, WIN_WIDTH, WIN_HEIGHT)
 
 	lightingShader := NewShader("./lighting.vs", "./lighting.fs")
-	lightCubeShader := NewShader("./light_cube.vs", "./light_cube.fs")
+	// lightCubeShader := NewShader("./light_cube.vs", "./light_cube.fs")
 
 	cubeVAO, VBO, lightCubeVAO := makeVao()
 
@@ -116,7 +129,6 @@ func main() {
 	lightingShader.SetInt("material.diffuse\x00", 0)
 	lightingShader.SetInt("material.specular\x00", 1)
 	lightingShader.SetInt("material.emission\x00", 2)
-	
 
 	sdl.SetRelativeMouseMode(true)
 
@@ -132,14 +144,14 @@ func main() {
 		// lightPos = glm.Vec3{1+math32.Sin(currentFrame)*2, math32.Sin(currentFrame/2), lightPos.Z()}
 
 		lightingShader.use()
-		lightingShader.SetVec3("light.position\x00", &lightPos)
+		lightingShader.SetVec3f("light.direction\x00", -0.2, -1.0, -0.3)
 		lightingShader.SetVec3("viewPos\x00", &camera.Position)
 
 		lightingShader.SetVec3f("light.ambient\x00", 0.2, 0.2, 0.2)
 		lightingShader.SetVec3f("light.diffuse\x00", 0.5, 0.5, 0.5)
 		lightingShader.SetVec3f("light.specular\x00", 1.0, 1.0, 1.0)
 
-		lightingShader.SetFloat("material.shininess\x00", 64.0)
+		lightingShader.SetFloat("material.shininess\x00", 32.0)
 
 		proj := glm.Perspective(glm.DegToRad(camera.Zoom), WIN_WIDTH/WIN_HEIGHT, 0.1, 100.0)
 		view := camera.GetViewMatrix()
@@ -156,20 +168,31 @@ func main() {
 		gl.ActiveTexture(gl.TEXTURE2)
 		gl.BindTexture(gl.TEXTURE_2D, emissionMap)
 		
-		gl.BindVertexArray(cubeVAO)
-		gl.DrawArrays(gl.TRIANGLES, 0, 36)
+		// gl.BindVertexArray(cubeVAO)
+		// gl.DrawArrays(gl.TRIANGLES, 0, 36)
 
 		//lamp stuff
-		lightCubeShader.use()
-		lightCubeShader.SetMat4("projection\x00", &proj)
-		lightCubeShader.SetMat4("view\x00", &view)
-		model = glm.Ident4()
-		model = model.Mul4(glm.Translate3D(lightPos.X(), lightPos.Y(), lightPos.Z()))
-		model = model.Mul4(glm.Scale3D(0.2, 0.2, 0.2))
-		lightCubeShader.SetMat4("model\x00", &model)
+		// lightCubeShader.use()
+		// lightCubeShader.SetMat4("projection\x00", &proj)
+		// lightCubeShader.SetMat4("view\x00", &view)
+		// model = glm.Ident4()
+		// model = model.Mul4(glm.Translate3D(lightPos.X(), lightPos.Y(), lightPos.Z()))
+		// model = model.Mul4(glm.Scale3D(0.2, 0.2, 0.2))
+		// lightCubeShader.SetMat4("model\x00", &model)
 
-		gl.BindVertexArray(lightCubeVAO)
-		gl.DrawArrays(gl.TRIANGLES, 0, 36)
+		// gl.BindVertexArray(lightCubeVAO)
+		// gl.DrawArrays(gl.TRIANGLES, 0, 36)
+
+		gl.BindVertexArray(cubeVAO)
+		for i := 0; i < 10; i++ {
+			model = glm.Ident4()
+			model = model.Mul4(glm.Translate3D(cubePositions[i].Elem()))
+			angle := float32(20 * i)
+			model = model.Mul4(glm.HomogRotate3D(glm.DegToRad(angle), glm.Vec3{1, 0.3, 0.5}))
+			lightingShader.SetMat4("model\x00", &model)
+
+			gl.DrawArrays(gl.TRIANGLES, 0, 36)
+		}
 
 		window.GLSwap()
 
