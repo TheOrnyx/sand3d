@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/chewxy/math32"
 	"github.com/go-gl/gl/v4.6-core/gl"
 	glm "github.com/go-gl/mathgl/mgl32"
 	"github.com/veandco/go-sdl2/sdl"
@@ -106,7 +107,7 @@ func main() {
 	gl.Viewport(0, 0, WIN_WIDTH, WIN_HEIGHT)
 
 	lightingShader := NewShader("./lighting.vs", "./lighting.fs")
-	// lightCubeShader := NewShader("./light_cube.vs", "./light_cube.fs")
+	lightCubeShader := NewShader("./light_cube.vs", "./light_cube.fs")
 
 	cubeVAO, VBO, lightCubeVAO := makeVao()
 
@@ -144,12 +145,19 @@ func main() {
 		// lightPos = glm.Vec3{1+math32.Sin(currentFrame)*2, math32.Sin(currentFrame/2), lightPos.Z()}
 
 		lightingShader.use()
-		lightingShader.SetVec3f("light.direction\x00", -0.2, -1.0, -0.3)
+		lightingShader.SetVec3("light.position\x00", &camera.Position)
+		lightingShader.SetVec3("light.direction\x00", &camera.Front)
+		lightingShader.SetFloat("light.cutOff\x00", math32.Cos(glm.DegToRad(12.5)))
+		lightingShader.SetFloat("light.outerCutOff\x00", math32.Cos(glm.DegToRad(17.5)))
 		lightingShader.SetVec3("viewPos\x00", &camera.Position)
 
 		lightingShader.SetVec3f("light.ambient\x00", 0.2, 0.2, 0.2)
 		lightingShader.SetVec3f("light.diffuse\x00", 0.5, 0.5, 0.5)
 		lightingShader.SetVec3f("light.specular\x00", 1.0, 1.0, 1.0)
+
+		lightingShader.SetFloat("light.constant\x00", 1.0)
+		lightingShader.SetFloat("light.linear\x00", 0.09)
+		lightingShader.SetFloat("light.quadratic\x00", 0.032)
 
 		lightingShader.SetFloat("material.shininess\x00", 32.0)
 
@@ -168,20 +176,8 @@ func main() {
 		gl.ActiveTexture(gl.TEXTURE2)
 		gl.BindTexture(gl.TEXTURE_2D, emissionMap)
 		
-		// gl.BindVertexArray(cubeVAO)
-		// gl.DrawArrays(gl.TRIANGLES, 0, 36)
-
-		//lamp stuff
-		// lightCubeShader.use()
-		// lightCubeShader.SetMat4("projection\x00", &proj)
-		// lightCubeShader.SetMat4("view\x00", &view)
-		// model = glm.Ident4()
-		// model = model.Mul4(glm.Translate3D(lightPos.X(), lightPos.Y(), lightPos.Z()))
-		// model = model.Mul4(glm.Scale3D(0.2, 0.2, 0.2))
-		// lightCubeShader.SetMat4("model\x00", &model)
-
-		// gl.BindVertexArray(lightCubeVAO)
-		// gl.DrawArrays(gl.TRIANGLES, 0, 36)
+		gl.BindVertexArray(cubeVAO)
+		gl.DrawArrays(gl.TRIANGLES, 0, 36)
 
 		gl.BindVertexArray(cubeVAO)
 		for i := 0; i < 10; i++ {
@@ -193,6 +189,18 @@ func main() {
 
 			gl.DrawArrays(gl.TRIANGLES, 0, 36)
 		}
+
+		// lamp stuff
+		lightCubeShader.use()
+		lightCubeShader.SetMat4("projection\x00", &proj)
+		lightCubeShader.SetMat4("view\x00", &view)
+		model = glm.Ident4()
+		model = model.Mul4(glm.Translate3D(lightPos.X(), lightPos.Y(), lightPos.Z()))
+		model = model.Mul4(glm.Scale3D(0.2, 0.2, 0.2))
+		lightCubeShader.SetMat4("model\x00", &model)
+
+		gl.BindVertexArray(lightCubeVAO)
+		gl.DrawArrays(gl.TRIANGLES, 0, 36)
 
 		window.GLSwap()
 
