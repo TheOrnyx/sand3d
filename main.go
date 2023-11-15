@@ -2,15 +2,18 @@ package main
 
 import (
 	"fmt"
-	"github.com/go-gl/gl/v4.6-core/gl"
-	glm "github.com/go-gl/mathgl/mgl32"
-	"github.com/veandco/go-sdl2/sdl"
 	"image"
 	"image/png"
 	"log"
 	"os"
 	"runtime"
 	"time"
+
+	"github.com/chewxy/math32"
+	_ "github.com/chewxy/math32"
+	"github.com/go-gl/gl/v4.6-core/gl"
+	glm "github.com/go-gl/mathgl/mgl32"
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 const WIN_WIDTH, WIN_HEIGHT = 800, 800
@@ -23,66 +26,50 @@ var deltaTime, lastFrame float32
 var lastMouseX, lastMouseY int32 = WIN_WIDTH / 2, WIN_HEIGHT / 2
 var yaw, pitch float32 = -90, 0
 
+var lightPos glm.Vec3 = glm.Vec3{1.2, 1.0, 2.0}
+
 var triVertices = []float32{
-	-0.5, -0.5, -0.5, 0.0, 0.0,
-	0.5, -0.5, -0.5, 1.0, 0.0,
-	0.5, 0.5, -0.5, 1.0, 1.0,
-	0.5, 0.5, -0.5, 1.0, 1.0,
-	-0.5, 0.5, -0.5, 0.0, 1.0,
-	-0.5, -0.5, -0.5, 0.0, 0.0,
+	-0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
+	0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
+	0.5, 0.5, -0.5, 0.0, 0.0, -1.0,
+	0.5, 0.5, -0.5, 0.0, 0.0, -1.0,
+	-0.5, 0.5, -0.5, 0.0, 0.0, -1.0,
+	-0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
 
-	-0.5, -0.5, 0.5, 0.0, 0.0,
-	0.5, -0.5, 0.5, 1.0, 0.0,
-	0.5, 0.5, 0.5, 1.0, 1.0,
-	0.5, 0.5, 0.5, 1.0, 1.0,
-	-0.5, 0.5, 0.5, 0.0, 1.0,
-	-0.5, -0.5, 0.5, 0.0, 0.0,
+	-0.5, -0.5, 0.5, 0.0, 0.0, 1.0,
+	0.5, -0.5, 0.5, 0.0, 0.0, 1.0,
+	0.5, 0.5, 0.5, 0.0, 0.0, 1.0,
+	0.5, 0.5, 0.5, 0.0, 0.0, 1.0,
+	-0.5, 0.5, 0.5, 0.0, 0.0, 1.0,
+	-0.5, -0.5, 0.5, 0.0, 0.0, 1.0,
 
-	-0.5, 0.5, 0.5, 1.0, 0.0,
-	-0.5, 0.5, -0.5, 1.0, 1.0,
-	-0.5, -0.5, -0.5, 0.0, 1.0,
-	-0.5, -0.5, -0.5, 0.0, 1.0,
-	-0.5, -0.5, 0.5, 0.0, 0.0,
-	-0.5, 0.5, 0.5, 1.0, 0.0,
+	-0.5, 0.5, 0.5, -1.0, 0.0, 0.0,
+	-0.5, 0.5, -0.5, -1.0, 0.0, 0.0,
+	-0.5, -0.5, -0.5, -1.0, 0.0, 0.0,
+	-0.5, -0.5, -0.5, -1.0, 0.0, 0.0,
+	-0.5, -0.5, 0.5, -1.0, 0.0, 0.0,
+	-0.5, 0.5, 0.5, -1.0, 0.0, 0.0,
 
-	0.5, 0.5, 0.5, 1.0, 0.0,
-	0.5, 0.5, -0.5, 1.0, 1.0,
-	0.5, -0.5, -0.5, 0.0, 1.0,
-	0.5, -0.5, -0.5, 0.0, 1.0,
-	0.5, -0.5, 0.5, 0.0, 0.0,
-	0.5, 0.5, 0.5, 1.0, 0.0,
+	0.5, 0.5, 0.5, 1.0, 0.0, 0.0,
+	0.5, 0.5, -0.5, 1.0, 0.0, 0.0,
+	0.5, -0.5, -0.5, 1.0, 0.0, 0.0,
+	0.5, -0.5, -0.5, 1.0, 0.0, 0.0,
+	0.5, -0.5, 0.5, 1.0, 0.0, 0.0,
+	0.5, 0.5, 0.5, 1.0, 0.0, 0.0,
 
-	-0.5, -0.5, -0.5, 0.0, 1.0,
-	0.5, -0.5, -0.5, 1.0, 1.0,
-	0.5, -0.5, 0.5, 1.0, 0.0,
-	0.5, -0.5, 0.5, 1.0, 0.0,
-	-0.5, -0.5, 0.5, 0.0, 0.0,
-	-0.5, -0.5, -0.5, 0.0, 1.0,
+	-0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
+	0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
+	0.5, -0.5, 0.5, 0.0, -1.0, 0.0,
+	0.5, -0.5, 0.5, 0.0, -1.0, 0.0,
+	-0.5, -0.5, 0.5, 0.0, -1.0, 0.0,
+	-0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
 
-	-0.5, 0.5, -0.5, 0.0, 1.0,
-	0.5, 0.5, -0.5, 1.0, 1.0,
-	0.5, 0.5, 0.5, 1.0, 0.0,
-	0.5, 0.5, 0.5, 1.0, 0.0,
-	-0.5, 0.5, 0.5, 0.0, 0.0,
-	-0.5, 0.5, -0.5, 0.0, 1.0,
-}
-
-var indices = []uint32{
-	0, 1, 3, // first triangle
-	1, 2, 3, // second triangle
-}
-
-var cubePositions = []glm.Vec3{
-	glm.Vec3{0.0, 0.0, 0.0},
-	glm.Vec3{2.0, 5.0, -15.0},
-	glm.Vec3{-1.5, -2.2, -2.5},
-	glm.Vec3{-3.8, -2.0, -12.3},
-	glm.Vec3{2.4, -0.4, -3.5},
-	glm.Vec3{-1.7, 3.0, -7.5},
-	glm.Vec3{1.3, -2.0, -2.5},
-	glm.Vec3{1.5, 2.0, -2.5},
-	glm.Vec3{1.5, 0.2, -1.5},
-	glm.Vec3{-1.3, 1.0, -1.5},
+	-0.5, 0.5, -0.5, 0.0, 1.0, 0.0,
+	0.5, 0.5, -0.5, 0.0, 1.0, 0.0,
+	0.5, 0.5, 0.5, 0.0, 1.0, 0.0,
+	0.5, 0.5, 0.5, 0.0, 1.0, 0.0,
+	-0.5, 0.5, 0.5, 0.0, 1.0, 0.0,
+	-0.5, 0.5, -0.5, 0.0, 1.0, 0.0,
 }
 
 func main() {
@@ -104,29 +91,15 @@ func main() {
 	if err := gl.Init(); err != nil {
 		log.Fatal("could not initialize OpenGL: ", err)
 	}
-	gl.Viewport(0, 0, WIN_WIDTH, WIN_HEIGHT)
-	progShader := NewShader("./vertShader.vs", "./fragShader.fs")
-	vao, vbo, ebo := makeVao()
-
-	texture1, err := loadTexture("./sofa-cat.png")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	texture2, err := loadTexture("./transhoward.png")
-	if err != nil {
-		log.Fatal(err)
-	}
-	sdl.SetRelativeMouseMode(true)
-	
-
 	gl.Enable(gl.DEPTH_TEST)
-	progShader.use()
-	progShader.SetInt("texture1\x00", 0)
-	progShader.SetInt("texture2\x00", 1)
+	gl.Viewport(0, 0, WIN_WIDTH, WIN_HEIGHT)
 
-	proj := glm.Perspective(glm.DegToRad(45), WIN_WIDTH/WIN_HEIGHT, 0.1, 100.0)
-	progShader.SetMat4("projection\x00", &proj)
+	lightingShader := NewShader("./lighting.vs", "./lighting.fs")
+	lightCubeShader := NewShader("./light_cube.vs", "./light_cube.fs")
+
+	cubeVAO, VBO, lightCubeVAO := makeVao()
+
+	sdl.SetRelativeMouseMode(true)
 
 	for !handleEvents() {
 		startTime := time.Now()
@@ -134,29 +107,52 @@ func main() {
 		deltaTime = currentFrame - lastFrame
 		lastFrame = currentFrame
 
-		gl.ClearColor(0.2, 0.3, 0.3, 1.0)
+		gl.ClearColor(0, 0, 0, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		gl.ActiveTexture(gl.TEXTURE0)
-		gl.BindTexture(gl.TEXTURE_2D, texture1)
-		gl.ActiveTexture(gl.TEXTURE1)
-		gl.BindTexture(gl.TEXTURE_2D, texture2)
+		// lightPos = glm.Vec3{1+math32.Sin(currentFrame)*2, math32.Sin(currentFrame/2), lightPos.Z()}
+		
+		lightingShader.use()
+		lightingShader.SetVec3("light.position\x00", &lightPos)
+		lightingShader.SetVec3("viewPos\x00", &camera.Position)
 
-		progShader.use()
+		lightColor := glm.Vec3{math32.Sin(currentFrame * 2), math32.Sin(currentFrame*0.7), math32.Sin(currentFrame*1.3)}
+		diffuseColor := lightColor.Mul(0.5)
+		ambientColor := diffuseColor.Mul(0.2)
+		
+		lightingShader.SetVec3("light.ambient\x00", &ambientColor)
+		lightingShader.SetVec3("light.diffuse\x00", &diffuseColor)
+		lightingShader.SetVec3f("light.specular\x00", 1.0, 1.0, 1.0)
+		
+		lightingShader.SetVec3f("material.ambient\x00", 1, 0.5, 0.31)
+		lightingShader.SetVec3f("material.diffuse\x00", 1, 0.5, 0.31)
+		lightingShader.SetVec3f("material.specular\x00", 0.5, 0.5, 0.5)
+		lightingShader.SetFloat("material.shininess\x00", 32.0)
+		
 
+		proj := glm.Perspective(glm.DegToRad(camera.Zoom), WIN_WIDTH/WIN_HEIGHT, 0.1, 100.0)
 		view := camera.GetViewMatrix()
-		progShader.SetMat4("view\x00", &view)
+		lightingShader.SetMat4("projection\x00", &proj)
+		lightingShader.SetMat4("view\x00", &view)
 
-		gl.BindVertexArray(vao)
-		for i := range cubePositions {
-			cubePos := cubePositions[i]
-			model := glm.Ident4()
-			model = model.Mul4(glm.Translate3D(cubePos.X(), cubePos.Y(), cubePos.Z()))
-			var angle float32 = float32(20.0 * i)
-			model = model.Mul4(glm.HomogRotate3D(glm.DegToRad(angle), glm.Vec3{1.0, 0.3, 0.5}))
-			progShader.SetMat4("model\x00", &model)
-			gl.DrawArrays(gl.TRIANGLES, 0, 36)
-		}
+		model := glm.Ident4()
+		lightingShader.SetMat4("model\x00", &model)
+
+		gl.BindVertexArray(cubeVAO)
+		gl.DrawArrays(gl.TRIANGLES, 0, 36)
+
+		//lamp stuff
+		lightCubeShader.use()
+		lightCubeShader.SetMat4("projection\x00", &proj)
+		lightCubeShader.SetMat4("view\x00", &view)
+		model = glm.Ident4()
+		model = model.Mul4(glm.Translate3D(lightPos.X(), lightPos.Y(), lightPos.Z()))
+		model = model.Mul4(glm.Scale3D(0.2, 0.2, 0.2))
+		lightCubeShader.SetMat4("model\x00", &model)
+
+		gl.BindVertexArray(lightCubeVAO)
+		gl.DrawArrays(gl.TRIANGLES, 0, 36)
+
 		window.GLSwap()
 
 		elapsedTime := time.Since(startTime)
@@ -165,15 +161,12 @@ func main() {
 			time.Sleep(sleepTime)
 		}
 	}
-
-	gl.DeleteVertexArrays(1, &vao)
-	gl.DeleteBuffers(1, &vbo)
-	gl.DeleteBuffers(1, &ebo)
-	gl.DeleteProgram(progShader.ID)
+	gl.DeleteVertexArrays(1, &cubeVAO)
+	gl.DeleteVertexArrays(1, &lightCubeVAO)
+	gl.DeleteBuffers(1, &VBO)
 }
 
 func handleEvents() bool {
-	handleMouse()
 	handleKeys(sdl.GetKeyboardState())
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		switch t := event.(type) {
@@ -182,6 +175,9 @@ func handleEvents() bool {
 
 		case *sdl.MouseWheelEvent:
 			camera.ProcessMouseScroll(t.PreciseY)
+
+		case *sdl.MouseMotionEvent:
+			handleMouse(t)
 		}
 	}
 	return false
@@ -202,9 +198,9 @@ func handleKeys(keys []uint8) {
 	}
 }
 
-func handleMouse() {
-	mouseX, mouseY, _ := sdl.GetMouseState()
-	xOffset, yOffset := mouseX - lastMouseX, lastMouseY - mouseY
+func handleMouse(t *sdl.MouseMotionEvent) {
+	mouseX, mouseY := lastMouseX + t.XRel, lastMouseY + t.YRel
+	xOffset, yOffset := mouseX-lastMouseX, lastMouseY-mouseY
 	lastMouseX, lastMouseY = mouseX, mouseY
 	camera.ProcessMouseMovement(float32(xOffset), float32(yOffset), true)
 }
@@ -252,23 +248,31 @@ func flipImage(img *image.RGBA) {
 }
 
 func makeVao() (uint32, uint32, uint32) {
-	var vbo, vao, ebo uint32
+	var vbo, cubeVAO, lightCubeVAO uint32
 
-	gl.GenVertexArrays(1, &vao)
+	gl.GenVertexArrays(1, &cubeVAO)
 	gl.GenBuffers(1, &vbo)
-
-	gl.BindVertexArray(vao)
 
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
 	gl.BufferData(gl.ARRAY_BUFFER, len(triVertices)*4, gl.Ptr(triVertices), gl.STATIC_DRAW)
 
-	gl.VertexAttribPointerWithOffset(0, 3, gl.FLOAT, false, 5*4, 0)
+	gl.BindVertexArray(cubeVAO)
+
+	gl.VertexAttribPointerWithOffset(0, 3, gl.FLOAT, false, 6*4, 0)
 	gl.EnableVertexAttribArray(0)
 
-	gl.VertexAttribPointerWithOffset(1, 2, gl.FLOAT, false, 5*4, 3*4)
+	gl.VertexAttribPointerWithOffset(1, 3, gl.FLOAT, false, 6*4, 3*4)
 	gl.EnableVertexAttribArray(1)
 
-	return vao, vbo, ebo
+	gl.GenVertexArrays(1, &lightCubeVAO)
+	gl.BindVertexArray(lightCubeVAO)
+	
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	
+	gl.VertexAttribPointerWithOffset(0, 3, gl.FLOAT, false, 6*4, 0)
+	gl.EnableVertexAttribArray(0)
+
+	return cubeVAO, vbo, lightCubeVAO
 }
 
 func makeOneNumArray(length int, num float32) []float32 {

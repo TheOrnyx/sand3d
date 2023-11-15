@@ -17,7 +17,7 @@ type shader struct {
 func NewShader(vertexPath, fragmentPath string) *shader {
 	var vertexCode, fragmentCode string
 	newShader := new(shader)
-	
+
 	vertexShaderSource, err := os.ReadFile(vertexPath)
 	handleError(err)
 	fragmentShaderSource, err := os.ReadFile(fragmentPath)
@@ -47,10 +47,10 @@ func compileShaders(shaderCode string, shaderType uint32) (uint32, error) {
 	var shader uint32
 
 	shader = gl.CreateShader(shaderType)
-	cSources, free := gl.Strs(shaderCode)
+	cSources, free := gl.Strs(shaderCode+"\x00")
 	gl.ShaderSource(shader, 1, cSources, nil)
-	gl.CompileShader(shader)
 	free()
+	gl.CompileShader(shader)
 
 	var status int32
 	gl.GetShaderiv(shader, gl.COMPILE_STATUS, &status)
@@ -61,7 +61,7 @@ func compileShaders(shaderCode string, shaderType uint32) (uint32, error) {
 		log := strings.Repeat("\x00", int(logLength+1))
 		gl.GetShaderInfoLog(shader, logLength, nil, gl.Str(log))
 
-		return 0, fmt.Errorf("failed to compile %v: %v", shaderCode, log)
+		return 0, fmt.Errorf("failed to compile\n %v \n %v", shaderCode, log)
 	}
 	
 	return shader, nil
