@@ -9,8 +9,6 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/chewxy/math32"
-	_ "github.com/chewxy/math32"
 	"github.com/go-gl/gl/v4.6-core/gl"
 	glm "github.com/go-gl/mathgl/mgl32"
 	"github.com/veandco/go-sdl2/sdl"
@@ -29,47 +27,47 @@ var yaw, pitch float32 = -90, 0
 var lightPos glm.Vec3 = glm.Vec3{1.2, 1.0, 2.0}
 
 var triVertices = []float32{
-	-0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
-	0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
-	0.5, 0.5, -0.5, 0.0, 0.0, -1.0,
-	0.5, 0.5, -0.5, 0.0, 0.0, -1.0,
-	-0.5, 0.5, -0.5, 0.0, 0.0, -1.0,
-	-0.5, -0.5, -0.5, 0.0, 0.0, -1.0,
+	-0.5, -0.5, -0.5, 0.0, 0.0, -1.0, 0.0, 0.0,
+	0.5, -0.5, -0.5, 0.0, 0.0, -1.0, 1.0, 0.0,
+	0.5, 0.5, -0.5, 0.0, 0.0, -1.0, 1.0, 1.0,
+	0.5, 0.5, -0.5, 0.0, 0.0, -1.0, 1.0, 1.0,
+	-0.5, 0.5, -0.5, 0.0, 0.0, -1.0, 0.0, 1.0,
+	-0.5, -0.5, -0.5, 0.0, 0.0, -1.0, 0.0, 0.0,
 
-	-0.5, -0.5, 0.5, 0.0, 0.0, 1.0,
-	0.5, -0.5, 0.5, 0.0, 0.0, 1.0,
-	0.5, 0.5, 0.5, 0.0, 0.0, 1.0,
-	0.5, 0.5, 0.5, 0.0, 0.0, 1.0,
-	-0.5, 0.5, 0.5, 0.0, 0.0, 1.0,
-	-0.5, -0.5, 0.5, 0.0, 0.0, 1.0,
+	-0.5, -0.5, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0,
+	0.5, -0.5, 0.5, 0.0, 0.0, 1.0, 1.0, 0.0,
+	0.5, 0.5, 0.5, 0.0, 0.0, 1.0, 1.0, 1.0,
+	0.5, 0.5, 0.5, 0.0, 0.0, 1.0, 1.0, 1.0,
+	-0.5, 0.5, 0.5, 0.0, 0.0, 1.0, 0.0, 1.0,
+	-0.5, -0.5, 0.5, 0.0, 0.0, 1.0, 0.0, 0.0,
 
-	-0.5, 0.5, 0.5, -1.0, 0.0, 0.0,
-	-0.5, 0.5, -0.5, -1.0, 0.0, 0.0,
-	-0.5, -0.5, -0.5, -1.0, 0.0, 0.0,
-	-0.5, -0.5, -0.5, -1.0, 0.0, 0.0,
-	-0.5, -0.5, 0.5, -1.0, 0.0, 0.0,
-	-0.5, 0.5, 0.5, -1.0, 0.0, 0.0,
+	-0.5, 0.5, 0.5, -1.0, 0.0, 0.0, 1.0, 0.0,
+	-0.5, 0.5, -0.5, -1.0, 0.0, 0.0, 1.0, 1.0,
+	-0.5, -0.5, -0.5, -1.0, 0.0, 0.0, 0.0, 1.0,
+	-0.5, -0.5, -0.5, -1.0, 0.0, 0.0, 0.0, 1.0,
+	-0.5, -0.5, 0.5, -1.0, 0.0, 0.0, 0.0, 0.0,
+	-0.5, 0.5, 0.5, -1.0, 0.0, 0.0, 1.0, 0.0,
 
-	0.5, 0.5, 0.5, 1.0, 0.0, 0.0,
-	0.5, 0.5, -0.5, 1.0, 0.0, 0.0,
-	0.5, -0.5, -0.5, 1.0, 0.0, 0.0,
-	0.5, -0.5, -0.5, 1.0, 0.0, 0.0,
-	0.5, -0.5, 0.5, 1.0, 0.0, 0.0,
-	0.5, 0.5, 0.5, 1.0, 0.0, 0.0,
+	0.5, 0.5, 0.5, 1.0, 0.0, 0.0, 1.0, 0.0,
+	0.5, 0.5, -0.5, 1.0, 0.0, 0.0, 1.0, 1.0,
+	0.5, -0.5, -0.5, 1.0, 0.0, 0.0, 0.0, 1.0,
+	0.5, -0.5, -0.5, 1.0, 0.0, 0.0, 0.0, 1.0,
+	0.5, -0.5, 0.5, 1.0, 0.0, 0.0, 0.0, 0.0,
+	0.5, 0.5, 0.5, 1.0, 0.0, 0.0, 1.0, 0.0,
 
-	-0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
-	0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
-	0.5, -0.5, 0.5, 0.0, -1.0, 0.0,
-	0.5, -0.5, 0.5, 0.0, -1.0, 0.0,
-	-0.5, -0.5, 0.5, 0.0, -1.0, 0.0,
-	-0.5, -0.5, -0.5, 0.0, -1.0, 0.0,
+	-0.5, -0.5, -0.5, 0.0, -1.0, 0.0, 0.0, 1.0,
+	0.5, -0.5, -0.5, 0.0, -1.0, 0.0, 1.0, 1.0,
+	0.5, -0.5, 0.5, 0.0, -1.0, 0.0, 1.0, 0.0,
+	0.5, -0.5, 0.5, 0.0, -1.0, 0.0, 1.0, 0.0,
+	-0.5, -0.5, 0.5, 0.0, -1.0, 0.0, 0.0, 0.0,
+	-0.5, -0.5, -0.5, 0.0, -1.0, 0.0, 0.0, 1.0,
 
-	-0.5, 0.5, -0.5, 0.0, 1.0, 0.0,
-	0.5, 0.5, -0.5, 0.0, 1.0, 0.0,
-	0.5, 0.5, 0.5, 0.0, 1.0, 0.0,
-	0.5, 0.5, 0.5, 0.0, 1.0, 0.0,
-	-0.5, 0.5, 0.5, 0.0, 1.0, 0.0,
-	-0.5, 0.5, -0.5, 0.0, 1.0, 0.0,
+	-0.5, 0.5, -0.5, 0.0, 1.0, 0.0, 0.0, 1.0,
+	0.5, 0.5, -0.5, 0.0, 1.0, 0.0, 1.0, 1.0,
+	0.5, 0.5, 0.5, 0.0, 1.0, 0.0, 1.0, 0.0,
+	0.5, 0.5, 0.5, 0.0, 1.0, 0.0, 1.0, 0.0,
+	-0.5, 0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 0.0,
+	-0.5, 0.5, -0.5, 0.0, 1.0, 0.0, 0.0, 1.0,
 }
 
 func main() {
@@ -99,6 +97,27 @@ func main() {
 
 	cubeVAO, VBO, lightCubeVAO := makeVao()
 
+	diffuseMap, err := loadTexture("./container2.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	specularMap, err := loadTexture("./container2_specular.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	emissionMap, err := loadTexture("./sofa-emission.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	lightingShader.use()
+	lightingShader.SetInt("material.diffuse\x00", 0)
+	lightingShader.SetInt("material.specular\x00", 1)
+	lightingShader.SetInt("material.emission\x00", 2)
+	
+
 	sdl.SetRelativeMouseMode(true)
 
 	for !handleEvents() {
@@ -111,24 +130,16 @@ func main() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
 		// lightPos = glm.Vec3{1+math32.Sin(currentFrame)*2, math32.Sin(currentFrame/2), lightPos.Z()}
-		
+
 		lightingShader.use()
 		lightingShader.SetVec3("light.position\x00", &lightPos)
 		lightingShader.SetVec3("viewPos\x00", &camera.Position)
 
-		lightColor := glm.Vec3{math32.Sin(currentFrame * 2), math32.Sin(currentFrame*0.7), math32.Sin(currentFrame*1.3)}
-		diffuseColor := lightColor.Mul(0.5)
-		ambientColor := diffuseColor.Mul(0.2)
-		
-		lightingShader.SetVec3("light.ambient\x00", &ambientColor)
-		lightingShader.SetVec3("light.diffuse\x00", &diffuseColor)
+		lightingShader.SetVec3f("light.ambient\x00", 0.2, 0.2, 0.2)
+		lightingShader.SetVec3f("light.diffuse\x00", 0.5, 0.5, 0.5)
 		lightingShader.SetVec3f("light.specular\x00", 1.0, 1.0, 1.0)
-		
-		lightingShader.SetVec3f("material.ambient\x00", 1, 0.5, 0.31)
-		lightingShader.SetVec3f("material.diffuse\x00", 1, 0.5, 0.31)
-		lightingShader.SetVec3f("material.specular\x00", 0.5, 0.5, 0.5)
-		lightingShader.SetFloat("material.shininess\x00", 32.0)
-		
+
+		lightingShader.SetFloat("material.shininess\x00", 64.0)
 
 		proj := glm.Perspective(glm.DegToRad(camera.Zoom), WIN_WIDTH/WIN_HEIGHT, 0.1, 100.0)
 		view := camera.GetViewMatrix()
@@ -138,6 +149,13 @@ func main() {
 		model := glm.Ident4()
 		lightingShader.SetMat4("model\x00", &model)
 
+		gl.ActiveTexture(gl.TEXTURE0)
+		gl.BindTexture(gl.TEXTURE_2D, diffuseMap)
+		gl.ActiveTexture(gl.TEXTURE1)
+		gl.BindTexture(gl.TEXTURE_2D, specularMap)
+		gl.ActiveTexture(gl.TEXTURE2)
+		gl.BindTexture(gl.TEXTURE_2D, emissionMap)
+		
 		gl.BindVertexArray(cubeVAO)
 		gl.DrawArrays(gl.TRIANGLES, 0, 36)
 
@@ -199,7 +217,7 @@ func handleKeys(keys []uint8) {
 }
 
 func handleMouse(t *sdl.MouseMotionEvent) {
-	mouseX, mouseY := lastMouseX + t.XRel, lastMouseY + t.YRel
+	mouseX, mouseY := lastMouseX+t.XRel, lastMouseY+t.YRel
 	xOffset, yOffset := mouseX-lastMouseX, lastMouseY-mouseY
 	lastMouseX, lastMouseY = mouseX, mouseY
 	camera.ProcessMouseMovement(float32(xOffset), float32(yOffset), true)
@@ -258,18 +276,21 @@ func makeVao() (uint32, uint32, uint32) {
 
 	gl.BindVertexArray(cubeVAO)
 
-	gl.VertexAttribPointerWithOffset(0, 3, gl.FLOAT, false, 6*4, 0)
+	gl.VertexAttribPointerWithOffset(0, 3, gl.FLOAT, false, 8*4, 0)
 	gl.EnableVertexAttribArray(0)
 
-	gl.VertexAttribPointerWithOffset(1, 3, gl.FLOAT, false, 6*4, 3*4)
+	gl.VertexAttribPointerWithOffset(1, 3, gl.FLOAT, false, 8*4, 3*4)
 	gl.EnableVertexAttribArray(1)
+
+	gl.VertexAttribPointerWithOffset(2, 2, gl.FLOAT, false, 8*4, 6*4)
+	gl.EnableVertexAttribArray(2)
 
 	gl.GenVertexArrays(1, &lightCubeVAO)
 	gl.BindVertexArray(lightCubeVAO)
-	
+
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	
-	gl.VertexAttribPointerWithOffset(0, 3, gl.FLOAT, false, 6*4, 0)
+
+	gl.VertexAttribPointerWithOffset(0, 3, gl.FLOAT, false, 8*4, 0)
 	gl.EnableVertexAttribArray(0)
 
 	return cubeVAO, vbo, lightCubeVAO

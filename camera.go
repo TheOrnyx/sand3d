@@ -15,7 +15,7 @@ const (
 const (
 	INIT_YAW         = -90
 	INIT_PITCH       = 0.0
-	INIT_SPEED       = 0.2
+	INIT_SPEED       = 0.1
 	INIT_SENSITIVITY = 0.1
 	INIT_ZOOM        = 45.0
 )
