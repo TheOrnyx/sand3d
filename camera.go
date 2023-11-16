@@ -10,12 +10,14 @@ const (
 	BACKWARD
 	LEFT
 	RIGHT
+	UP
+	DOWN
 )
 
 const (
 	INIT_YAW         = -90
 	INIT_PITCH       = 0.0
-	INIT_SPEED       = 0.1
+	INIT_SPEED       = 0.03
 	INIT_SENSITIVITY = 0.1
 	INIT_ZOOM        = 45.0
 )
@@ -68,6 +70,10 @@ func (c *Camera) ProcessKeyPress(moveDir int, deltaTime float32) {
 		c.Position = c.Position.Sub(c.Right.Mul(velocity))
 	case RIGHT:
 		c.Position = c.Position.Add(c.Right.Mul(velocity))
+	case UP:
+		c.Position = c.Position.Add(c.Up.Mul(velocity))
+	case DOWN:
+		c.Position = c.Position.Sub(c.Up.Mul(velocity))
 	}
 }
 
