@@ -97,8 +97,8 @@ func (t *Texture) Generate(data []uint8)  {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, t.FilterMax)
 
 	//unbind the texture
-	gl.BindTexture(gl.TEXTURE_2D, 0)
 	// gl.GenerateMipmap(gl.TEXTURE_2D)
+	gl.BindTexture(gl.TEXTURE_2D, 0)
 }
 
 // Bind binds the texture

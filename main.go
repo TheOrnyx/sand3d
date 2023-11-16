@@ -15,10 +15,9 @@ import (
 const WIN_WIDTH, WIN_HEIGHT = 1000, 1000
 const FRAME_RATE = 60
 const WORLD_SIZE = 60 //the amount of cells in each direction (so the amount of cubes should be WORLD_SIZE^3)
-const CELL_SIZE_SCALAR = 1.0/WORLD_SIZE
+const CELL_SIZE_SCALAR = 1.0 / WORLD_SIZE //scalar to use for the size of the cubes
 
-
-var vertices = []float32{
+var vertices = []float32{ //the cube vertices, possible move
 	-0.5, -0.5, -0.5, 0.0, 0.0,
 	0.5, -0.5, -0.5, 1.0, 0.0,
 	0.5, 0.5, -0.5, 1.0, 1.0,
@@ -69,6 +68,7 @@ var camera *Camera = MakeCamera(glm.Vec3{0, 0, 3}, glm.Vec3{0, 1, 0}, INIT_YAW, 
 var deltaTime, lastFrame float32
 var lastMouseX, lastMouseY int32 = WIN_WIDTH / 2, WIN_HEIGHT / 2
 var drawType int = DIRT
+var selectionY float32 = WORLD_SIZE-1 //the plane at which you make selections from
 
 func main() {
 	fmt.Println("begin")
@@ -112,7 +112,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	texture, err := NewTexture("./data/dirt.png", worldShader)
 	if err != nil {
 		log.Fatal(err)
@@ -120,7 +120,7 @@ func main() {
 
 	world := MakeWorld(WORLD_SIZE, WORLD_SIZE, WORLD_SIZE)
 	// world.Cells[0][20][0].Type = DIRT
-	
+
 	// ------------------------------ Main Loop ------------------------------
 	for !handleEvents() {
 		startTime := time.Now()
@@ -131,17 +131,17 @@ func main() {
 		//clear the screen
 		gl.ClearColor(0, 0, 0, 1.0)
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-		
+
 		//update the world
 		world.Update()
 		world.Cells[10][59][10].Type = DIRT
 		world.Cells[15][59][10].Type = DIRT
 		world.Cells[10][59][15].Type = DIRT
 		world.Cells[15][59][15].Type = DIRT
-		
+
 		//bind textures
 		texture.Bind(0)
-		
+
 		//camera stuff
 		proj := glm.Perspective(glm.DegToRad(camera.Zoom), WIN_WIDTH/WIN_HEIGHT, 0.1, 100.0)
 		worldShader.SetMat4("projection", &proj)
@@ -158,11 +158,13 @@ func main() {
 			gl.DrawArrays(gl.TRIANGLES, 0, 36)
 		}
 
+		world.GetCameraCell(camera)
+		
 		//draw the world
 		gl.PolygonMode(gl.FRONT_AND_BACK, gl.FILL)
 		worldShader.SetBool("white", false)
 		world.Draw(worldShader)
-		
+
 		//display and then delay
 		window.GLSwap()
 		elapsedTime := time.Since(startTime)

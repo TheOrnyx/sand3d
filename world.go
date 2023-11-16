@@ -1,6 +1,7 @@
 package main
 
 import (
+	// "fmt"
 	"math/rand"
 )
 
@@ -65,6 +66,27 @@ func (w *World) Draw(shader *shader)  {
 			}
 		}
 	}
+}
+
+
+// GetCameraCell gets the cell that the camera is looking at
+func (w *World) GetCameraCell(c *Camera)  {
+	gridX := int(c.Position.X() / CELL_SIZE_SCALAR)
+	gridZ := int(c.Position.Z() / CELL_SIZE_SCALAR)
+
+	viewDir := c.Front.Normalize()
+
+	t := (selectionY - c.Position.Y()) / viewDir.Y()
+
+	intersectPoint := c.Position.Add(viewDir.Mul(t))
+
+	gridX = int(intersectPoint.X() / CELL_SIZE_SCALAR)
+	gridZ = int(intersectPoint.Z() / CELL_SIZE_SCALAR)
+
+	gridX = max(0, min(WORLD_SIZE-1, gridX))
+	gridZ = max(0, min(WORLD_SIZE-1, gridZ))
+
+	// fmt.Println(gridX, gridZ)
 }
 
 // ------------------------------ Adding Things ------------------------------
