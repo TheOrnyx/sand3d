@@ -67,7 +67,6 @@ func LoadTextureImg(texPath string) (int32, int32, []uint8, error) {
 		return int32(width), int32(height), convImg.Pix, nil
 	case *image.NRGBA:
 		return int32(width), int32(height), convImg.Pix, nil
-		
 	}
 	//flipImage(img.(*image.RGBA))
 	return int32(width), int32(height), img.(*image.RGBA).Pix, nil

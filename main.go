@@ -14,6 +14,7 @@ import (
 
 const WIN_WIDTH, WIN_HEIGHT = 1000, 1000
 const FRAME_RATE = 60
+const frameDelay = 1000/FRAME_RATE
 const WORLD_SIZE = 60 //the amount of cells in each direction (so the amount of cubes should be WORLD_SIZE^3)
 const CELL_SIZE_SCALAR = 1.0 / WORLD_SIZE //scalar to use for the size of the cubes
 
@@ -138,6 +139,9 @@ func main() {
 		world.Cells[15][59][10].Type = DIRT
 		world.Cells[10][59][15].Type = DIRT
 		world.Cells[15][59][15].Type = DIRT
+		world.Cells[30][40][10].Type = WATER
+		world.Cells[35][54][15].Type = WATER
+		world.Cells[40][27][15].Type = WATER
 
 		//bind textures
 		texture.Bind(0)
@@ -167,10 +171,10 @@ func main() {
 
 		//display and then delay
 		window.GLSwap()
+		
 		elapsedTime := time.Since(startTime)
-		sleepTime := time.Second/time.Duration(FRAME_RATE) - elapsedTime
-		if sleepTime > 0 {
-			time.Sleep(sleepTime)
+		if elapsedTime < time.Duration(frameDelay)*time.Millisecond {
+			time.Sleep(time.Duration(frameDelay)*time.Millisecond - elapsedTime)
 		}
 	}
 }

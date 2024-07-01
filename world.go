@@ -117,19 +117,30 @@ func (w *World) Update() {
 // MoveCell attempts to move the cell
 func (w *World) MoveCell(x, y, z int) {
 	//probs do a switch for the move direction but for now I'm just doing down
+	switch w.Cells[x][y][z].Type {
+	case DIRT:
+		w.moveCellDirt(x, y, z)
+	case WATER:
+		w.moveCellWater(x, y, z)
+	}
+}
+
+// moveCellDirt moves cells for dirt type
+func (w *World) moveCellDirt(x, y, z int)  {
 	if w.IndexInRange(x, y-1, z) && w.Cells[x][y-1][z].Type == AIR {
 		w.SwapCells(x, y, z, x, y-1, z)
 		w.Visited[x][y-1][z] = true
 	} else {
-		move1 := w.IndexInRange(x-1, y-1, z) && w.Cells[x-1][y-1][z].Type == AIR
-		move2 := w.IndexInRange(x+1, y-1, z) && w.Cells[x+1][y-1][z].Type == AIR
-		move3 := w.IndexInRange(x, y-1, z-1) && w.Cells[x][y-1][z-1].Type == AIR
-		move4 := w.IndexInRange(x, y-1, z+1) && w.Cells[x][y-1][z+1].Type == AIR
 		
-		move5 := w.IndexInRange(x-1, y-1, z+1) && w.Cells[x-1][y-1][z+1].Type == AIR
-		move6 := w.IndexInRange(x+1, y-1, z-1) && w.Cells[x+1][y-1][z-1].Type == AIR
-		move7 := w.IndexInRange(x-1, y-1, z-1) && w.Cells[x-1][y-1][z-1].Type == AIR
-		move8 := w.IndexInRange(x+1, y-1, z+1) && w.Cells[x+1][y-1][z+1].Type == AIR
+		move1 := w.checkMove(x-1, y-1, z, AIR)  
+		move2 := w.checkMove(x+1, y-1, z, AIR)  
+		move3 := w.checkMove(x, y-1, z-1, AIR)  
+		move4 := w.checkMove(x, y-1, z+1, AIR)
+		
+		move5 := w.checkMove(x-1, y-1, z+1, AIR)
+		move6 := w.checkMove(x+1, y-1, z-1, AIR) 
+		move7 := w.checkMove(x-1, y-1, z-1, AIR) 
+		move8 := w.checkMove(x+1, y-1, z+1, AIR) 
 
 		
 		optionRan := false
@@ -163,6 +174,64 @@ func (w *World) MoveCell(x, y, z int) {
 				optionRan = true
 			case move8 && choice == 7:
 				w.SwapCells(x, y, z, x+1, y-1, z+1)
+				optionRan = true
+			}
+		}
+	}
+}
+
+// checkMove check if the movement is correct
+func (w *World) checkMove(x, y, z, moveType int) bool {
+	return w.IndexInRange(x, y, z) && w.Cells[x][y][z].Type == moveType
+}
+
+// moveCellWater move cell for the water type
+func (w *World) moveCellWater(x, y, z int)  {
+	if w.IndexInRange(x, y-1, z) && w.Cells[x][y-1][z].Type == AIR {
+		w.SwapCells(x, y, z, x, y-1, z)
+		w.Visited[x][y-1][z] = true
+	} else {
+		move1 := w.checkMove(x-1, y, z, AIR)  
+		move2 := w.checkMove(x+1, y, z, AIR)  
+		move3 := w.checkMove(x, y, z-1, AIR)  
+		move4 := w.checkMove(x, y, z+1, AIR)
+		
+		move5 := w.checkMove(x-1, y, z+1, AIR)
+		move6 := w.checkMove(x+1, y, z-1, AIR) 
+		move7 := w.checkMove(x-1, y, z-1, AIR) 
+		move8 := w.checkMove(x+1, y, z+1, AIR)
+
+		optionRan := false
+		if !move1 && !move2 && !move3 && !move4 && !move5 && !move6 && !move7 && !move8 {
+			return
+		}
+		
+		for !optionRan {
+			choice := rand.Int31n(8)
+			switch {
+			case move1 && choice == 0:
+				w.SwapCells(x, y, z, x-1, y, z)
+				optionRan = true
+			case move2 && choice == 1:
+				w.SwapCells(x, y, z, x+1, y, z)
+				optionRan = true
+			case move3 && choice == 2:
+				w.SwapCells(x, y, z, x, y, z-1)
+				optionRan = true
+			case move4 && choice == 3:
+				w.SwapCells(x, y, z, x, y, z+1)
+				optionRan = true
+			case move5 && choice == 4:
+				w.SwapCells(x, y, z, x-1, y, z+1)
+				optionRan = true
+			case move6 && choice == 5:
+				w.SwapCells(x, y, z, x+1, y, z-1)
+				optionRan = true
+			case move7 && choice == 6:
+				w.SwapCells(x, y, z, x-1, y, z-1)
+				optionRan = true
+			case move8 && choice == 7:
+				w.SwapCells(x, y, z, x+1, y, z+1)
 				optionRan = true
 			}
 		}
